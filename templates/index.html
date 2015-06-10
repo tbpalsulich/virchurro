@@ -1,0 +1,10 @@
+<!doctype html>
+<title>Get your churro on</title>
+<link rel=stylesheet type=text/css href="{{url_for('static', filename="style.css")}}">
+<script type="text/javascript" src="{{url_for('static', filename="custom.js")}}"></script>
+
+<select id="song" onchange="changeSong()">
+  <option value="{{url_for('static', filename="mus/boston.mp3")}}">I'm Shipping Up To Boston, Dropkick Murphy's</option>
+  <option value="{{url_for('static', filename="mus/kenny.mp3")}}">Songbird, Kenny G</option>
+  <option value="{{url_for('static', filename="mus/collar.mp3")}}">Poppin' My Collar, Three 6 Mafia</option>
+</select>
