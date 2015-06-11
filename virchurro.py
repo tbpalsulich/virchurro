@@ -5,10 +5,10 @@ from flask import Flask, request, redirect, url_for, abort, render_template
 from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import abort
 
-import secrets
+import config
 
 app = Flask(__name__)
-app.config.from_object(secrets)
+app.config.from_object(config)
 db = SQLAlchemy(app)
 
 # Create our database model
