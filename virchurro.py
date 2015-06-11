@@ -1,16 +1,29 @@
-import sqlite3
-from flask import Flask, request, g, redirect, url_for, abort, render_template
+import random
+import string
+
+from flask import Flask, request, redirect, url_for, abort, render_template
+from flask.ext.sqlalchemy import SQLAlchemy
 from werkzeug.exceptions import abort
+
 import secrets
 
 app = Flask(__name__)
 app.config.from_object(secrets)
+db = SQLAlchemy(app)
 
-# http://stackoverflow.com/a/9011133
+# Create our database model
+class Churro(db.Model):
+    __tablename__ = "churros"
+    slug = db.Column(db.String(6), primary_key=True)
+    song = db.Column(db.String(120))
+
+    def __init__(self, slug, song):
+        self.slug = slug
+        self.song = song
+
+    def __repr__(self):
+        return '<Slug %s>' % self.slug
 def random_string(length):
-    import random
-    import string
-
     pool = string.ascii_letters + string.digits
     return ''.join(random.choice(pool) for _ in range(length))
 
@@ -20,30 +33,18 @@ def index():
 
 @app.route("/new", methods=["POST"])
 def new():
-    c = g.db.cursor()
     slug = random_string(6)
-    c.execute('insert into entries (slug, song) values (?, ?)', [slug, request.form['song']])
-    g.db.commit()
+    churro = Churro(slug, request.form['song'])
+    db.session.add(churro)
+    db.session.commit()
     return redirect(url_for("get", slug=slug))
 
 @app.route("/<slug>")
 def get(slug):
-    song = g.db.execute('SELECT song FROM entries WHERE slug=?', [slug]).fetchone()
-    if song is None: abort(404)
-    return render_template("churro.html", song=song[0])
+    churro = db.session.query(Churro).get(slug)
+    if churro is None: abort(404)
 
-def connect_db():
-    return sqlite3.connect(app.config['DATABASE'])
-
-@app.before_request
-def before_request():
-    g.db = connect_db()
-
-@app.teardown_request
-def teardown_request(exception):
-    db = getattr(g, 'db', None)
-    if db is not None:
-        db.close()
+    return render_template("churro.html", song=churro.song)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=app.config['DEBUG'])

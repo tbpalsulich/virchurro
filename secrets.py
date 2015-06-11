@@ -1,6 +1,3 @@
 # configuration
-DATABASE = 'test.db'
+SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/virchurro'
 DEBUG = True
-SECRET_KEY = 'development key'
-USERNAME = 'admin'
-PASSWORD = 'default'
