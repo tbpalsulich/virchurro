@@ -1,11 +1,18 @@
 import sqlite3
-from flask import Flask, request, session, g, redirect, url_for, \
-     abort, render_template, flash
+from flask import Flask, request, g, redirect, url_for, abort, render_template
 from werkzeug.exceptions import abort
 import secrets
 
 app = Flask(__name__)
 app.config.from_object(secrets)
+
+# http://stackoverflow.com/a/9011133
+def random_string(length):
+    import random
+    import string
+
+    pool = string.ascii_letters + string.digits
+    return ''.join(random.choice(pool) for _ in range(length))
 
 @app.route("/")
 def index():
@@ -14,15 +21,15 @@ def index():
 @app.route("/new", methods=["POST"])
 def new():
     c = g.db.cursor()
-    c.execute('insert into entries (song) values (?)', [request.form['song']])
+    slug = random_string(6)
+    c.execute('insert into entries (slug, song) values (?, ?)', [slug, request.form['song']])
     g.db.commit()
-    return redirect(url_for("get", id=c.lastrowid))
+    return redirect(url_for("get", slug=slug))
 
-@app.route("/<id>")
-def get(id):
-    song = g.db.execute('SELECT song FROM entries WHERE id=?', [id]).fetchone()
-    if song is None:
-        abort(404)
+@app.route("/<slug>")
+def get(slug):
+    song = g.db.execute('SELECT song FROM entries WHERE slug=?', [slug]).fetchone()
+    if song is None: abort(404)
     return render_template("churro.html", song=song[0])
 
 def connect_db():

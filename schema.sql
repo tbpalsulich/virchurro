@@ -1,5 +1,5 @@
 drop table if exists entries;
 create table entries (
-  id integer primary key autoincrement,
+  slug text primary key not null,
   song text not null
 );
